@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'form_screen_3.dart';
+
 class FormScreen2 extends StatefulWidget {
   final String selectedGender;
   final String age;
@@ -82,6 +84,7 @@ class _FormScreen2State extends State<FormScreen2> {
               suffixIcon: Icon(Icons.account_balance_wallet, color: Colors.blueGrey),
             ),
             items: [
+              '0 - 25,000',
               '25,001 - 50,000',
               '50,001 - 75,000',
               '75,001 - 100,000',
@@ -241,74 +244,42 @@ class _FormScreen2State extends State<FormScreen2> {
               SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : () async {
-                    if (_formKey.currentState!.validate() && _dailyTransport.length <= 2) {
-                      setState(() {
-                        _isLoading = true;
-                      });
-
-                      try {
-                        String docId='';
-                        FirebaseFirestore firestore = FirebaseFirestore.instance;
-                        CollectionReference users = firestore.collection('users');
-                        DocumentReference counterRef = firestore.collection('counters').doc('users');
-                        await firestore.runTransaction((transaction) async {
-                          DocumentSnapshot counterSnapshot = await transaction.get(counterRef);
-                          int newId = 1;
-
-                          if (counterSnapshot.exists) {
-                            newId = (counterSnapshot.get('count') as int) + 1;
-                          }
-
-                          // Format the document ID as USER0001, USER0002, etc.
-                          docId = 'USER${newId.toString().padLeft(4, '0')}';
-
-                          // Create a new user document with the generated ID
-                          transaction.set(users.doc(docId), {
-                            'gender': widget.selectedGender,
-                            'age': widget.age,
-                            'city': widget.city,
-                            'residentialArea': widget.residentialArea,
-                            'familyMembers': widget.familyMembers,
-                            'salary': salary,
-                            'cars': _selectedCars,
-                            'bikes': _selectedBikes,
-                            'dailyTransport': _dailyTransport,
-                            'createdAt': FieldValue.serverTimestamp(),
-                          });
-
-                          // Update the counter
-                          transaction.set(counterRef, {'count': newId});
-                        });
-
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('user', docId);
-
-                        if (docId.isNotEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("User Registered Successfully")),
-                          );
-                          Navigator.pushNamed(context, '/thankyouSplash');
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Network Error Try Again")),
-                          );
-                        }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("An error occurred: $e")),
-                        );
-                      } finally {
+                    onPressed: _isLoading ? null : () async {
+                      if (_formKey.currentState!.validate() && _dailyTransport.length <= 2) {
                         setState(() {
-                          _isLoading = false;
+                          _isLoading = true;
                         });
+
+                        // Prepare all form data
+                        Map<String, dynamic> formData = {
+                          'gender': widget.selectedGender,
+                          'age': widget.age,
+                          'city': widget.city,
+                          'residentialArea': widget.residentialArea,
+                          'familyMembers': widget.familyMembers,
+                          'salary': salary,
+                          'cars': _selectedCars,
+                          'bikes': _selectedBikes,
+                          'dailyTransport': _dailyTransport,
+                        };
+
+                        // Navigate to incentive screen with all form data
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IncentiveScreen(formData: formData),
+                          ),
+                        ).then((_) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        });
+                      } else if (_dailyTransport.length > 2) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Please select only top 2 transport modes")),
+                        );
                       }
-                    } else if (_dailyTransport.length > 2) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select only top 2 transport modes")),
-                      );
-                    }
-                  },
+                    },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueGrey,
                     shape: RoundedRectangleBorder(

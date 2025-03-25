@@ -40,30 +40,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   }
   void startDataCollection() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('purpose', tripPurpose);
-    await prefs.setString('mode', travelMode);
-    if (tripPurpose != '' && travelMode != '') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Data collection started')),
+    bool hasFullLocationPermission = await LocationService.checkLocationPermission();
+    if(hasFullLocationPermission) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('purpose', tripPurpose);
+      await prefs.setString('mode', travelMode);
+      if (tripPurpose != '' && travelMode != '') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Data collection started')),
 
-      );
-      await prefs.setString('iscollecting', 'true');
-      final service = FlutterBackgroundService();
-      isRunning=  await  service.isRunning();
-      if(!isRunning){
-        initializeService();
+        );
+        await prefs.setString('iscollecting', 'true');
+        final service = FlutterBackgroundService();
+        isRunning = await service.isRunning();
+        if (!isRunning) {
+          initializeService();
+        }
+        else {
+          FlutterBackgroundService().invoke('startService');
+        }
+        setState(() {
+          isCollecting = true;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select trip purpose and travel mode')),
+        );
       }
-      else{
-        FlutterBackgroundService().invoke('startService');
-      }
-      setState(() {
-        isCollecting=true;
-      });
-
-    } else {
+    }
+    else{
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select trip purpose and travel mode')),
+        SnackBar(content: Text('Kindly Enable Location Permission in the Apps Settings')),
       );
     }
   }
@@ -103,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Echo Green', style: TextStyle(color: Colors.white)),
+            Text('Safar', style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold)),
             InkWell( onTap: (){
               Navigator.pushNamed(context, '/settings');
             }, child: Icon(Icons.settings_rounded, color: Colors.white)),

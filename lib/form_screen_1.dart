@@ -15,7 +15,7 @@ class _UserFormPageState extends State<FormScreen1> {
   String age='';
   String? _selectedCity;
   int _selectedIndex = 0; // Add this in your state
-  List<String> Gender =["Male" ,"Female","Other"];
+  List<String> Gender =["Male" ,"Female"];
 
   TextEditingController _residentialAreaController = TextEditingController();
   TextEditingController _ageController = TextEditingController();
@@ -96,7 +96,7 @@ class _UserFormPageState extends State<FormScreen1> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(3, (index) {
+                    children: List.generate(2, (index) {
                       return Expanded(
                         child: GestureDetector(
                           onTap: () {

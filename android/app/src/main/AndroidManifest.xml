@@ -3,7 +3,7 @@
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
-        android:label="echogreen"
+        android:label="Safar"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

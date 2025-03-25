@@ -29,5 +29,16 @@ class LocationService {
     }
   }
 
+  static Future<bool> checkLocationPermission() async {
+    // Check foreground location permission
+    final foregroundStatus = await Permission.location.status;
+
+    // Check background location permission
+    final backgroundStatus = await Permission.locationAlways.status;
+
+    // Return true only if both permissions are granted
+    return foregroundStatus.isGranted && backgroundStatus.isGranted;
+  }
+
 
 }
